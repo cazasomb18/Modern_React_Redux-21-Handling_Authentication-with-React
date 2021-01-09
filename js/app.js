@@ -735,4 +735,63 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Recording the User's ID
-	//
+	//We're to make one last change to our authReducer
+		//going to add a prop into INITIAL_STATE:
+			//entire idea of app: have api server that will store list of all streams created 
+			//by our users.
+			//once user logged in: can delete/edit streams they created:
+				//need to give each stream an ID associated w/ user who created it
+
+	//We have UserIds via gapi auth2, sign in to app, in console:
+		gapi.auth2.getAuthInstance().currentUser
+			//google automatically assigns user ID whenever they sign in.
+
+		gapi.auth2.getAuthInstance().currentUser.get().getId()//gets signed in users' google ID:
+			//==> google UserId: "104478319689741479636"
+
+	//onAuthChange(): GoogleAuth.js: want to get that userID obj into component:
+		onAuthChange = isSignedIn => {
+			if (isSignedIn) {
+				this.props.signIn(this.auth.currentUser.get().getId());//returns id from currentUser
+			} else {
+				this.props.signOut();
+			}
+		}//now when we call this action creator we're going to pass in the id of the user that signed in
+
+	//Now we need to make sure that we open up our action creator, recieve this as an object and assign
+	//it to the action object on the 'payload' property, src/actions/index.js:
+		export const signIn = (userId) => {
+			return {
+				type: SIGN_IN,
+				payload: useId
+			};
+		};
+
+	//Finally, inside our AuthReducer, we need to make sure that when we sign in that not only update the
+	//is signed ID property, but also update the 'userId' prop on INITIAL_STATE as well:
+	//authReducer.js:
+		import { SIGN_IN, SIGN_OUT } from '../actions/types';
+		const INITIAL_STATE = {
+			isSignedIn: null,
+			userId: null
+		};
+		export default (state = INITIAL_STATE, action) => {
+			switch (action.type) {
+				case SIGN_IN:
+					return {
+						...state, 
+						isSignedIn: true, 
+						userId: action.payload 
+					};
+				case SIGN_OUT: {
+					return {
+						...state, 
+						isSignedIn: false,
+						userId: null
+				 	};
+				}
+				default:
+					return state;
+			}
+		};//this about does it for AUTH!
+///////////////////////////////SECTION COMPLETE/////////////////////////////////////////////////////////		
